@@ -1,0 +1,143 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCollection, render } from 'astro:content';
+import { localBusinessJsonLd } from '../../lib/jsonld';
+
+export const prerender = true;
+
+export async function getStaticPaths() {
+  const venues = await getCollection('venues');
+  return venues.map((venue) => ({
+    params: { slug: venue.id },
+    props: { venue },
+  }));
+}
+
+const { venue } = Astro.props;
+const { Content } = await render(venue);
+
+const jsonLd = localBusinessJsonLd(
+  venue.data.name,
+  venue.data.location,
+  venue.data.description,
+  new URL(Astro.url.pathname, Astro.site).toString(),
+);
+---
+
+<BaseLayout
+  title={venue.data.name}
+  description={venue.data.description}
+  jsonLd={jsonLd}
+>
+  <div class="max-w-3xl mx-auto px-4 py-12">
+    <!-- Breadcrumb -->
+    <nav class="text-sm text-gray-500 mb-6">
+      <a href="/" class="hover:text-brand-green transition-colors">Help Center</a>
+      <span class="mx-2">/</span>
+      <span class="text-brand-charcoal">Venue Guides</span>
+    </nav>
+
+    <!-- Header -->
+    <header class="mb-10">
+      <div class="flex items-center gap-3 mb-2">
+        <span class="bg-brand-sage/20 text-brand-green text-xs px-3 py-1 rounded-full capitalize">
+          {venue.data.venueType}
+        </span>
+        <span class="text-sm text-gray-500">{venue.data.location}</span>
+      </div>
+      <h1 class="font-serif text-3xl md:text-4xl font-bold text-brand-green leading-tight">
+        {venue.data.name}
+      </h1>
+      <p class="text-gray-600 mt-3 text-lg leading-relaxed">
+        {venue.data.description}
+      </p>
+    </header>
+
+    <!-- Quick Info -->
+    <section class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-10">
+      <!-- Capacity -->
+      {venue.data.capacity && (
+        <div class="bg-white rounded-xl p-5 border border-gray-100">
+          <h3 class="text-sm font-semibold uppercase tracking-wide text-brand-sage mb-2">Capacity</h3>
+          <p class="text-brand-green font-semibold text-lg">
+            {venue.data.capacity.min}–{venue.data.capacity.max} guests
+          </p>
+        </div>
+      )}
+
+      <!-- Recommended Flowers -->
+      {venue.data.recommendedFlowers.length > 0 && (
+        <div class="bg-white rounded-xl p-5 border border-gray-100">
+          <h3 class="text-sm font-semibold uppercase tracking-wide text-brand-sage mb-2">Recommended Flowers</h3>
+          <div class="flex flex-wrap gap-2">
+            {venue.data.recommendedFlowers.map((flower: string) => (
+              <span class="bg-brand-blush text-gray-700 text-sm px-3 py-1 rounded-full">{flower}</span>
+            ))}
+          </div>
+        </div>
+      )}
+    </section>
+
+    <!-- Logistics -->
+    {venue.data.logistics && (
+      <section class="mb-10">
+        <h2 class="font-serif text-xl font-semibold text-brand-charcoal mb-4">Logistics & Setup</h2>
+        <div class="bg-white rounded-xl p-6 border border-gray-100 space-y-4">
+          {venue.data.logistics.setupTime && (
+            <div>
+              <h4 class="text-sm font-semibold text-brand-sage uppercase tracking-wide">Setup Time</h4>
+              <p class="text-gray-700 mt-1">{venue.data.logistics.setupTime}</p>
+            </div>
+          )}
+          {venue.data.logistics.loadInNotes && (
+            <div>
+              <h4 class="text-sm font-semibold text-brand-sage uppercase tracking-wide">Load-In Notes</h4>
+              <p class="text-gray-700 mt-1">{venue.data.logistics.loadInNotes}</p>
+            </div>
+          )}
+          {venue.data.logistics.restrictions.length > 0 && (
+            <div>
+              <h4 class="text-sm font-semibold text-brand-sage uppercase tracking-wide">Restrictions</h4>
+              <ul class="mt-2 space-y-1">
+                {venue.data.logistics.restrictions.map((r: string) => (
+                  <li class="flex items-start gap-2 text-sm text-gray-700">
+                    <span class="text-red-400 mt-0.5 flex-shrink-0">&#9679;</span>
+                    {r}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {venue.data.logistics.contactInfo && (
+            <div>
+              <h4 class="text-sm font-semibold text-brand-sage uppercase tracking-wide">Contact</h4>
+              <p class="text-gray-700 mt-1">{venue.data.logistics.contactInfo}</p>
+            </div>
+          )}
+        </div>
+      </section>
+    )}
+
+    <!-- Seasonal Notes -->
+    {venue.data.seasonalNotes && (
+      <section class="mb-10">
+        <h2 class="font-serif text-xl font-semibold text-brand-charcoal mb-4">Seasonal Notes</h2>
+        <div class="bg-brand-blush rounded-xl p-6">
+          <p class="text-gray-700 leading-relaxed">{venue.data.seasonalNotes}</p>
+        </div>
+      </section>
+    )}
+
+    <!-- Full Content -->
+    <div class="prose prose-lg prose-green max-w-none prose-headings:font-serif prose-headings:text-brand-green prose-a:text-brand-green prose-a:underline-offset-2">
+      <Content />
+    </div>
+
+    <!-- Back Link -->
+    <div class="mt-12">
+      <a href="/" class="text-brand-green hover:text-brand-sage transition-colors text-sm font-medium">
+        &larr; Back to Help Center
+      </a>
+    </div>
+  </div>
+</BaseLayout>

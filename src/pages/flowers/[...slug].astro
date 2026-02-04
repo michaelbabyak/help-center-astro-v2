@@ -1,0 +1,148 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCollection, render } from 'astro:content';
+import { productJsonLd } from '../../lib/jsonld';
+
+export const prerender = true;
+
+export async function getStaticPaths() {
+  const flowers = await getCollection('flowers');
+  return flowers.map((flower) => ({
+    params: { slug: flower.id },
+    props: { flower },
+  }));
+}
+
+const { flower } = Astro.props;
+const { Content } = await render(flower);
+
+const jsonLd = productJsonLd(
+  flower.data.name,
+  flower.data.description,
+  flower.data.priceRange,
+  new URL(Astro.url.pathname, Astro.site).toString(),
+);
+---
+
+<BaseLayout
+  title={flower.data.name}
+  description={flower.data.description}
+  jsonLd={jsonLd}
+>
+  <div class="max-w-3xl mx-auto px-4 py-12">
+    <!-- Breadcrumb -->
+    <nav class="text-sm text-gray-500 mb-6">
+      <a href="/" class="hover:text-brand-green transition-colors">Help Center</a>
+      <span class="mx-2">/</span>
+      <span class="text-brand-charcoal">Flower Profiles</span>
+    </nav>
+
+    <!-- Header -->
+    <header class="mb-10">
+      <h1 class="font-serif text-3xl md:text-4xl font-bold text-brand-green leading-tight">
+        {flower.data.name}
+      </h1>
+      {flower.data.scientificName && (
+        <p class="text-gray-500 italic mt-1">{flower.data.scientificName}</p>
+      )}
+      <p class="text-gray-600 mt-3 text-lg leading-relaxed">
+        {flower.data.description}
+      </p>
+    </header>
+
+    <!-- Quick Facts -->
+    <section class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-10">
+      <!-- Seasons -->
+      <div class="bg-white rounded-xl p-5 border border-gray-100">
+        <h3 class="text-sm font-semibold uppercase tracking-wide text-brand-sage mb-2">Seasons</h3>
+        <div class="flex flex-wrap gap-2">
+          {flower.data.seasons.map((season: string) => (
+            <span class="bg-brand-sage/20 text-brand-green text-sm px-3 py-1 rounded-full capitalize">
+              {season}
+            </span>
+          ))}
+        </div>
+      </div>
+
+      <!-- Price Range -->
+      {flower.data.priceRange && (
+        <div class="bg-white rounded-xl p-5 border border-gray-100">
+          <h3 class="text-sm font-semibold uppercase tracking-wide text-brand-sage mb-2">Price Range</h3>
+          <p class="text-brand-green font-semibold text-lg">
+            ${flower.data.priceRange.min}–${flower.data.priceRange.max}
+            <span class="text-sm font-normal text-gray-500 ml-1">{flower.data.priceRange.unit}</span>
+          </p>
+        </div>
+      )}
+
+      <!-- Colors -->
+      <div class="bg-white rounded-xl p-5 border border-gray-100">
+        <h3 class="text-sm font-semibold uppercase tracking-wide text-brand-sage mb-2">Available Colors</h3>
+        <div class="flex flex-wrap gap-2">
+          {flower.data.colors.map((color: string) => (
+            <span class="bg-gray-100 text-gray-700 text-sm px-3 py-1 rounded-full">{color}</span>
+          ))}
+        </div>
+      </div>
+
+      <!-- Wedding Uses -->
+      <div class="bg-white rounded-xl p-5 border border-gray-100">
+        <h3 class="text-sm font-semibold uppercase tracking-wide text-brand-sage mb-2">Wedding Uses</h3>
+        <ul class="text-sm text-gray-700 space-y-1">
+          {flower.data.weddingUses.slice(0, 4).map((use: string) => (
+            <li>{use}</li>
+          ))}
+        </ul>
+      </div>
+    </section>
+
+    <!-- Varieties -->
+    {flower.data.varieties && flower.data.varieties.length > 0 && (
+      <section class="mb-10">
+        <h2 class="font-serif text-xl font-semibold text-brand-charcoal mb-4">Popular Varieties</h2>
+        <div class="space-y-3">
+          {flower.data.varieties.map((variety: { name: string; description: string; color?: string }) => (
+            <div class="bg-white rounded-lg p-5 border border-gray-100">
+              <div class="flex items-center gap-3">
+                <h3 class="font-semibold text-brand-green">{variety.name}</h3>
+                {variety.color && (
+                  <span class="text-xs bg-brand-blush text-gray-600 px-2 py-0.5 rounded-full">{variety.color}</span>
+                )}
+              </div>
+              <p class="text-sm text-gray-600 mt-2">{variety.description}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+    )}
+
+    <!-- Care Tips -->
+    {flower.data.careTips.length > 0 && (
+      <section class="mb-10">
+        <h2 class="font-serif text-xl font-semibold text-brand-charcoal mb-4">Care Tips</h2>
+        <div class="bg-brand-blush rounded-xl p-6">
+          <ul class="space-y-2">
+            {flower.data.careTips.map((tip: string) => (
+              <li class="flex items-start gap-3 text-gray-700">
+                <span class="text-brand-green mt-1 flex-shrink-0">&#10003;</span>
+                <span class="text-sm">{tip}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+    )}
+
+    <!-- Full Content -->
+    <div class="prose prose-lg prose-green max-w-none prose-headings:font-serif prose-headings:text-brand-green prose-a:text-brand-green prose-a:underline-offset-2">
+      <Content />
+    </div>
+
+    <!-- Back Link -->
+    <div class="mt-12">
+      <a href="/" class="text-brand-green hover:text-brand-sage transition-colors text-sm font-medium">
+        &larr; Back to Help Center
+      </a>
+    </div>
+  </div>
+</BaseLayout>

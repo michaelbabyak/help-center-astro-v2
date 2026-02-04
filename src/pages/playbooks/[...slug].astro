@@ -1,0 +1,88 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCollection, render } from 'astro:content';
+import { howToJsonLd } from '../../lib/jsonld';
+
+export const prerender = true;
+
+export async function getStaticPaths() {
+  const playbooks = await getCollection('playbooks');
+  return playbooks.map((playbook) => ({
+    params: { slug: playbook.id },
+    props: { playbook },
+  }));
+}
+
+const { playbook } = Astro.props;
+const { Content } = await render(playbook);
+
+const jsonLd = howToJsonLd(
+  playbook.data.title,
+  playbook.data.description,
+  playbook.data.steps,
+  new URL(Astro.url.pathname, Astro.site).toString(),
+);
+---
+
+<BaseLayout
+  title={playbook.data.title}
+  description={playbook.data.description}
+  jsonLd={jsonLd}
+>
+  <div class="max-w-3xl mx-auto px-4 py-12">
+    <!-- Breadcrumb -->
+    <nav class="text-sm text-gray-500 mb-6">
+      <a href="/" class="hover:text-brand-green transition-colors">Help Center</a>
+      <span class="mx-2">/</span>
+      <span class="text-brand-charcoal">Playbooks</span>
+    </nav>
+
+    <!-- Header -->
+    <header class="mb-10">
+      <h1 class="font-serif text-3xl md:text-4xl font-bold text-brand-green leading-tight">
+        {playbook.data.title}
+      </h1>
+      <p class="text-gray-600 mt-3 text-lg leading-relaxed">
+        {playbook.data.description}
+      </p>
+      <div class="flex items-center gap-4 mt-4 text-sm text-gray-500">
+        <span>{playbook.data.steps.length} steps</span>
+        <span>&middot;</span>
+        <span>{playbook.data.estimatedReadTime} min read</span>
+      </div>
+    </header>
+
+    <!-- Steps Overview -->
+    <section class="mb-10">
+      <h2 class="font-serif text-xl font-semibold text-brand-charcoal mb-4">Overview</h2>
+      <ol class="space-y-3">
+        {playbook.data.steps.map((step: { title: string; description: string; timeframe?: string }, i: number) => (
+          <li class="flex gap-4 items-start bg-white rounded-lg p-4 border border-gray-100">
+            <span class="bg-brand-green text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-semibold flex-shrink-0">
+              {i + 1}
+            </span>
+            <div>
+              <h3 class="font-semibold text-brand-charcoal">{step.title}</h3>
+              <p class="text-sm text-gray-600 mt-1">{step.description}</p>
+              {step.timeframe && (
+                <span class="text-xs text-brand-sage mt-2 inline-block">{step.timeframe}</span>
+              )}
+            </div>
+          </li>
+        ))}
+      </ol>
+    </section>
+
+    <!-- Full Content -->
+    <div class="prose prose-lg prose-green max-w-none prose-headings:font-serif prose-headings:text-brand-green prose-a:text-brand-green prose-a:underline-offset-2">
+      <Content />
+    </div>
+
+    <!-- Back Link -->
+    <div class="mt-12">
+      <a href="/" class="text-brand-green hover:text-brand-sage transition-colors text-sm font-medium">
+        &larr; Back to Help Center
+      </a>
+    </div>
+  </div>
+</BaseLayout>

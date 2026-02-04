@@ -1,0 +1,113 @@
+---
+interface Props {
+  title: string;
+  description: string;
+  jsonLd?: Record<string, unknown> | Record<string, unknown>[];
+  metaTitle?: string;
+  metaDescription?: string;
+  ogImage?: string;
+}
+
+const { title, description, jsonLd, metaTitle, metaDescription, ogImage } = Astro.props;
+const pageTitle = metaTitle ?? `${title} | Poppy Flowers Help Center`;
+const pageDescription = metaDescription ?? description;
+const canonicalUrl = new URL(Astro.url.pathname, Astro.site);
+---
+
+<!doctype html>
+<html lang="en" class="scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="generator" content={Astro.generator} />
+    <title>{pageTitle}</title>
+    <meta name="description" content={pageDescription} />
+    <link rel="canonical" href={canonicalUrl} />
+
+    <!-- Open Graph -->
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={pageDescription} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonicalUrl} />
+    {ogImage && <meta property="og:image" content={ogImage} />}
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- JSON-LD Structured Data -->
+    {jsonLd && Array.isArray(jsonLd) ? (
+      jsonLd.map((ld) => (
+        <script type="application/ld+json" set:html={JSON.stringify(ld)} />
+      ))
+    ) : jsonLd ? (
+      <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+    ) : null}
+  </head>
+  <body class="min-h-screen bg-brand-cream text-brand-charcoal font-sans antialiased">
+    <!-- Header -->
+    <header class="bg-brand-green text-white">
+      <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+        <a href="/" class="flex items-center gap-3 hover:opacity-90 transition-opacity">
+          <span class="text-2xl">🌸</span>
+          <div>
+            <span class="font-serif text-xl font-semibold">Poppy Flowers</span>
+            <span class="text-sm text-brand-sage ml-2">Help Center</span>
+          </div>
+        </a>
+        <nav class="hidden md:flex items-center gap-6 text-sm">
+          <a href="/" class="hover:text-brand-sage transition-colors">Home</a>
+          <a href="/categories/pricing-budget" class="hover:text-brand-sage transition-colors">Pricing</a>
+          <a href="/categories/working-with-poppy" class="hover:text-brand-sage transition-colors">How It Works</a>
+          <a href="/flowers/garden-roses" class="hover:text-brand-sage transition-colors">Flowers</a>
+          <a href="https://poppyflowers.com" class="bg-white/10 px-4 py-2 rounded-lg hover:bg-white/20 transition-colors">
+            Visit Poppy
+          </a>
+        </nav>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+      <slot />
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-brand-green text-white mt-16">
+      <div class="max-w-6xl mx-auto px-4 py-12">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div>
+            <h3 class="font-serif text-lg font-semibold mb-3">Poppy Flowers</h3>
+            <p class="text-brand-sage text-sm leading-relaxed">
+              Beautiful wedding flowers, transparent pricing, and a seamless experience from consultation to celebration.
+            </p>
+          </div>
+          <div>
+            <h4 class="font-semibold mb-3 text-sm uppercase tracking-wide">Help Center</h4>
+            <ul class="space-y-2 text-sm text-brand-sage">
+              <li><a href="/categories/pricing-budget" class="hover:text-white transition-colors">Pricing & Budget</a></li>
+              <li><a href="/categories/working-with-poppy" class="hover:text-white transition-colors">Working with Poppy</a></li>
+              <li><a href="/categories/design-style" class="hover:text-white transition-colors">Design & Style</a></li>
+              <li><a href="/categories/logistics" class="hover:text-white transition-colors">Logistics</a></li>
+            </ul>
+          </div>
+          <div>
+            <h4 class="font-semibold mb-3 text-sm uppercase tracking-wide">Resources</h4>
+            <ul class="space-y-2 text-sm text-brand-sage">
+              <li><a href="/playbooks/how-to-book-your-wedding-florist" class="hover:text-white transition-colors">Booking Guide</a></li>
+              <li><a href="/flowers/garden-roses" class="hover:text-white transition-colors">Flower Profiles</a></li>
+              <li><a href="/venues/the-barn-at-edgewood" class="hover:text-white transition-colors">Venue Guides</a></li>
+            </ul>
+          </div>
+        </div>
+        <div class="border-t border-white/20 mt-8 pt-8 text-center text-sm text-brand-sage">
+          <p>&copy; {new Date().getFullYear()} Poppy Flowers. All rights reserved.</p>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>
