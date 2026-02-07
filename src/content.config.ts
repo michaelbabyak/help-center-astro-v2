@@ -83,6 +83,16 @@ const venues = defineCollection({
     location: z.string(),
     description: z.string(),
     venueType: z.enum(['barn', 'garden', 'ballroom', 'beach', 'vineyard', 'estate', 'rooftop', 'other']),
+    setting: z.string().optional(),
+    style: z.string().optional(),
+    bestSeasons: z.array(z.enum(['spring', 'summer', 'fall', 'winter'])).default([]),
+    heroImage: z.string().optional(),
+    images: z.array(z.string()).default([]),
+    website: z.string().url().optional(),
+    sources: z.array(z.object({
+      label: z.string(),
+      url: z.string().url(),
+    })).default([]),
     capacity: z.object({
       min: z.number(),
       max: z.number(),
@@ -95,6 +105,10 @@ const venues = defineCollection({
     }).optional(),
     recommendedFlowers: z.array(z.string()).default([]),
     seasonalNotes: z.string().optional(),
+    faqItems: z.array(z.object({
+      question: z.string(),
+      answer: z.string(),
+    })).optional(),
     pviId: z.string().optional(),
   }),
 });

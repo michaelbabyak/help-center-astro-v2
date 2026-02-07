@@ -1,0 +1,115 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import VenueCard from '../../components/VenueCard.astro';
+import { getCollection } from 'astro:content';
+import { formatVenueType } from '../../lib/format';
+
+export const prerender = true;
+
+const venues = await getCollection('venues');
+const venueTypes = ['barn', 'garden', 'ballroom', 'beach', 'vineyard', 'estate', 'rooftop', 'other'] as const;
+---
+
+<BaseLayout
+  title="Venue Guides"
+  description="Expert floral guides for popular wedding venues. Find flower recommendations, logistics tips, and design inspiration for your venue."
+  metaTitle="Venue Guides | Poppy Flowers Help Center"
+>
+  <div class="max-w-6xl mx-auto px-4 py-12">
+    <!-- Breadcrumb -->
+    <nav class="text-sm text-gray-500 mb-6">
+      <a href="/" class="hover:text-brand-green transition-colors">Help Center</a>
+      <span class="mx-2">/</span>
+      <span class="text-brand-charcoal">Venue Guides</span>
+    </nav>
+
+    <!-- Page Header -->
+    <header class="mb-10">
+      <h1 class="font-serif text-3xl md:text-4xl font-bold text-brand-green leading-tight">
+        Venue Guides
+      </h1>
+      <p class="text-gray-600 mt-3 text-lg leading-relaxed max-w-2xl">
+        Expert floral guides for popular wedding venues
+      </p>
+    </header>
+
+    <!-- Filter Bar -->
+    <div class="flex flex-wrap gap-2 mb-8" id="venue-filters">
+      <button
+        class="px-4 py-2 rounded-full text-sm font-medium transition-colors bg-brand-green text-white"
+        data-venue-type="all"
+        type="button"
+      >
+        All
+      </button>
+      {venueTypes.map((type) => (
+        <button
+          class="px-4 py-2 rounded-full text-sm font-medium transition-colors bg-white text-brand-charcoal border border-gray-200 hover:border-brand-sage"
+          data-venue-type={type}
+          type="button"
+        >
+          {formatVenueType(type)}
+        </button>
+      ))}
+    </div>
+
+    <!-- Venue Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="venue-grid">
+      {venues.map((venue) => (
+        <div data-venue-type={venue.data.venueType}>
+          <VenueCard
+            id={venue.id}
+            name={venue.data.name}
+            location={venue.data.location}
+            venueType={venue.data.venueType}
+            description={venue.data.description}
+          />
+        </div>
+      ))}
+    </div>
+
+    <!-- Empty State -->
+    <div id="venue-empty" class="hidden text-center py-16">
+      <p class="text-gray-500 text-lg">No venues found for this type.</p>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  const filters = document.getElementById('venue-filters');
+  const grid = document.getElementById('venue-grid');
+  const empty = document.getElementById('venue-empty');
+
+  if (filters && grid && empty) {
+    const buttons = filters.querySelectorAll<HTMLButtonElement>('button[data-venue-type]');
+    const cards = grid.querySelectorAll<HTMLElement>(':scope > [data-venue-type]');
+
+    buttons.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const type = btn.dataset.venueType;
+
+        // Update active pill styling
+        buttons.forEach((b) => {
+          b.classList.remove('bg-brand-green', 'text-white');
+          b.classList.add('bg-white', 'text-brand-charcoal', 'border', 'border-gray-200');
+        });
+        btn.classList.remove('bg-white', 'text-brand-charcoal', 'border', 'border-gray-200');
+        btn.classList.add('bg-brand-green', 'text-white');
+
+        // Filter cards
+        let visibleCount = 0;
+        cards.forEach((card) => {
+          if (type === 'all' || card.dataset.venueType === type) {
+            card.style.display = 'block';
+            visibleCount++;
+          } else {
+            card.style.display = 'none';
+          }
+        });
+
+        // Toggle empty state
+        empty.classList.toggle('hidden', visibleCount > 0);
+      });
+    });
+  }
+</script>

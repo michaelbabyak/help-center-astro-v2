@@ -1,0 +1,65 @@
+---
+import { formatVenueType } from '../lib/format';
+
+interface Props {
+  id: string;
+  name: string;
+  location: string;
+  venueType: string;
+  description: string;
+  heroImage?: string;
+}
+
+const { id, name, location, venueType, description, heroImage } = Astro.props;
+
+const truncatedDescription =
+  description.length > 120 ? description.slice(0, 120).trimEnd() + '...' : description;
+
+const venueTypeEmojis: Record<string, string> = {
+  barn: '\uD83C\uDFDA\uFE0F',
+  garden: '\uD83C\uDF3B',
+  ballroom: '\u2728',
+  beach: '\uD83C\uDFD6\uFE0F',
+  vineyard: '\uD83C\uDF47',
+  estate: '\uD83C\uDFDB\uFE0F',
+  rooftop: '\uD83C\uDF06',
+  other: '\uD83D\uDC90',
+};
+
+const emoji = venueTypeEmojis[venueType] ?? '\uD83D\uDC90';
+---
+
+<a
+  href={`/venues/${id}`}
+  class="bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-lg transition-shadow group block"
+  data-venue-type={venueType}
+>
+  {heroImage ? (
+    <img
+      src={heroImage}
+      alt={name}
+      class="w-full h-48 object-cover"
+    />
+  ) : (
+    <div class="w-full h-48 bg-gradient-to-br from-brand-sage/30 to-brand-green/20 flex items-center justify-center">
+      <span class="text-5xl">{emoji}</span>
+    </div>
+  )}
+
+  <div class="p-5">
+    <div class="flex items-center gap-2 mb-2">
+      <span class="bg-brand-sage/20 text-brand-green text-xs px-3 py-1 rounded-full">
+        {formatVenueType(venueType)}
+      </span>
+      <span class="text-xs text-gray-500">{location}</span>
+    </div>
+
+    <h3 class="font-serif text-lg font-semibold text-brand-charcoal group-hover:text-brand-green transition-colors">
+      {name}
+    </h3>
+
+    <p class="text-sm text-gray-600 mt-2 leading-relaxed">
+      {truncatedDescription}
+    </p>
+  </div>
+</a>
