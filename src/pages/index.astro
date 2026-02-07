@@ -3,8 +3,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import { getCollection } from 'astro:content';
 import { websiteJsonLd } from '../lib/jsonld';
 
-export const prerender = true;
-
 const articles = await getCollection('articles');
 const categories = await getCollection('categories');
 const playbooks = await getCollection('playbooks');

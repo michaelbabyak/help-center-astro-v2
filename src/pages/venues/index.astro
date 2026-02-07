@@ -4,8 +4,6 @@ import VenueCard from '../../components/VenueCard.astro';
 import { getCollection } from 'astro:content';
 import { formatVenueType } from '../../lib/format';
 
-export const prerender = true;
-
 const venues = await getCollection('venues');
 const venueTypes = ['barn', 'garden', 'ballroom', 'beach', 'vineyard', 'estate', 'rooftop', 'other'] as const;
 ---

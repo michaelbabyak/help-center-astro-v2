@@ -3,8 +3,6 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import { getCollection, render } from 'astro:content';
 import { productJsonLd } from '../../lib/jsonld';
 
-export const prerender = true;
-
 export async function getStaticPaths() {
   const flowers = await getCollection('flowers');
   return flowers.map((flower) => ({

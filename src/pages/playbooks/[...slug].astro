@@ -3,8 +3,6 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import { getCollection, render } from 'astro:content';
 import { howToJsonLd } from '../../lib/jsonld';
 
-export const prerender = true;
-
 export async function getStaticPaths() {
   const playbooks = await getCollection('playbooks');
   return playbooks.map((playbook) => ({

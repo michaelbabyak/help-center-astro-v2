@@ -5,8 +5,6 @@ import { getCollection, render } from 'astro:content';
 import { localBusinessJsonLd } from '../../lib/jsonld';
 import { formatVenueType } from '../../lib/format';
 
-export const prerender = true;
-
 export async function getStaticPaths() {
   const venues = await getCollection('venues');
   return venues.map((venue) => ({
